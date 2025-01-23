@@ -13,3 +13,11 @@ provider "aws" {
   secret_key = var.secret_key
 
 }
+
+resource "aws_vpc" "project_vpc" {
+  cidr_block       = var.vpc_cidr_block
+  
+  tags = {
+    Name = "proj-vpc"
+  }
+}
