@@ -75,3 +75,39 @@ resource "aws_route_table_association" "public_rtb_association" {
   subnet_id      = aws_subnet.public_subnet[count.index].id
   route_table_id = aws_route_table.public_rtb.id
 }
+
+resource "aws_security_group" "project_sg" {
+  name        = "project-sg"
+  vpc_id      = aws_vpc.project_vpc.id
+
+  tags = {
+    Name = "proj_sg"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "http_ingress" {
+  security_group_id = aws_security_group.project_sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 80
+  ip_protocol       = "tcp"
+  to_port           = 80
+}
+
+resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4" {
+  security_group_id = aws_security_group.project_sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1"
+  from_port         = 0
+  to_port           = 0
+}
+
+resource "aws_instance" "nginx" {
+  ami           = var.ami_id
+  instance_type = var.instance_type
+  subnet_id     = element(aws_subnet.public_subnet[*].id, 0)
+  security_groups = [aws_security_group.project_sg.id]
+
+  tags = {
+    Name = "proj-nginx-instance"
+  }
+}
